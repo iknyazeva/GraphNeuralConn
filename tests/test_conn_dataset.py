@@ -1,7 +1,8 @@
-from graph_conn.conn_dataset import FullAbideDataset, ListToDGLDataset
+from graph_conn.conn_dataset import FullAbideDataset, CorrToDGLDataset
 from graph_conn.conn_dataset import GraphParams
-from graph_conn.conn_data_utils import dgl_graph_from_vec
+from graph_conn.conn_data_utils import dgl_graph_from_vec, create_test_corr
 import numpy as np
+import pickle
 import dgl
 import torch
 import pytest
@@ -11,6 +12,27 @@ import pytest
 def graph_params():
     graph_params = GraphParams()
     return graph_params
+
+def test_corr_to_dgl_dataset():
+    graph_params = GraphParams()
+    graph_params.raw_dir = '../dataset/'
+    graph_params.filename = 'test_corr.pickle'
+    graph_params.n_nodes = 20
+    graph_params.target_name = 'labels'
+    N = 30
+    create_test_corr(N, graph_params)
+    dataset = CorrToDGLDataset(graph_params)
+    split = dataset.get_split_idx()
+    assert True
+
+
+def test_full_abide_dataset():
+    graph_params = GraphParams()
+    dataset = FullAbideDataset(graph_params)
+    split = dataset.get_split_idx()
+    test_dataset = dataset[split['test']]
+    assert True
+
 
 def test_list_to_dgl_dataset():
     graph_params = GraphParams()
@@ -25,10 +47,3 @@ def test_list_to_dgl_dataset():
     graph, label = test_dataset[0]
     assert isinstance(graph, dgl.DGLGraph)
     assert isinstance(label, torch.LongTensor)
-
-def test_full_abide_dataset():
-    graph_params = GraphParams()
-    dataset = FullAbideDataset(graph_params)
-    split = dataset.get_split_idx()
-    test_dataset = dataset[split['test']]
-    assert True
