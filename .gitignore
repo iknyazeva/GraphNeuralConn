@@ -1,0 +1,7 @@
+.ipynb_checkpoints
+.DS_Store
+.idea
+__pycache__/
+.pytest_cache/
+/dataset
+/processed_data
