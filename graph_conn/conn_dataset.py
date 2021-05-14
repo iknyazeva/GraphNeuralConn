@@ -1,6 +1,6 @@
 import torch
 import dgl
-from graph_conn.conn_data_utils import load_data_to_graphs, return_subset, dgl_graph_from_vec
+from graph_conn.conn_data_utils import load_data_to_graphs, dgl_graph_from_vec
 from sklearn.model_selection import train_test_split
 from dgl.data import DGLDataset
 from pathlib import Path
@@ -23,8 +23,8 @@ class GraphParams:
     name = attr.ib(default='power_abide')
     add_self_loop = attr.ib(default=True)
     filename = attr.ib(default='power_conn_abide.pickle')
-    corr_type = attr.ib(default='correlation')
-    target = attr.ib(default='abide_diagnosis')
+    corr_name = attr.ib(default='correlation')
+    target_name = attr.ib(default='abide_diagnosis')
 
     @classmethod
     def from_file(cls, path_to_json: Path):
@@ -38,28 +38,17 @@ class GraphParams:
 class CorrToDGLDataset(DGLDataset):
 
     def __init__(self, graph_params):
-
-        super().__init__(name='corr')
         self.graphs = []
         self.labels = []
         self.graph_params = graph_params
+        super().__init__(name=graph_params.name)
 
-        # assert all(len(lists[0]) == len(li) for li in lists)
 
-    def process(self, matrix, labels):
-        """
+    def process(self):
 
-        Args:
-            matrix (ndarray): with shape N*n*n, where N  - number of correlation matrix, n - number of nodes
-            labels (ndarray or list): list with targets
-
-        Returns:
-
-        """
-        N = matrix.shape[0]
-        for i in range(N):
-            self.graphs.append(dgl_graph_from_vec(matrix[i], self.graph_params, flatten=self.graph_params.flatten))
-        self.labels = torch.LongTensor(labels)
+        graphs, labels = load_data_to_graphs(self.graph_params)
+        self.graphs = graphs
+        self.labels = labels
 
     def get_split_idx(self, test_size=0.1, val_size=0.1):
 
@@ -95,15 +84,15 @@ class CorrToDGLDataset(DGLDataset):
         return len(self.graphs)
 
 
-class FullAbideDataset(DGLDataset):
+class FullAbideDataset(CorrToDGLDataset):
     """
-    download dataset from flatten structure saved as a pickle dictionary with keys corr_type and target
+    download dataset from flatten structure saved as a pickle dictionary with keys corr_name and target_name
     """
 
     def __init__(self, graph_params):
-        self.graphs = []
-        self.labels = []
-        self.graph_params = graph_params
+        #self.graphs = []
+        #self.labels = []
+        #self.graph_params = graph_params
         super().__init__(name=graph_params.name, raw_dir=graph_params.raw_dir)
 
     def process(self):
@@ -123,7 +112,7 @@ class FullAbideDataset(DGLDataset):
     def __getitem__(self, idx):
         """ Get datapoint with index
         Args:
-            idx: int or array of ints
+          idx: int or array of ints
 
         Returns:
         """
@@ -142,7 +131,6 @@ class FullAbideDataset(DGLDataset):
 
     def __len__(self):
         return len(self.graphs)
-
 
 class ListToDGLDataset(DGLDataset):
     def __init__(self, graphs, labels):

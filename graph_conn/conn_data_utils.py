@@ -8,6 +8,25 @@ import pickle
 from graph_conn import feature_generation
 
 
+
+def create_test_corr(N, graph_params):
+    """
+
+    Args:
+        N (int): number of matrix
+        graph_params (GraphParams): parameters of processing
+
+    Returns:
+
+    """
+    matrix = 0.3 * np.random.randn(N, graph_params.n_nodes, graph_params.n_nodes)
+    labels = np.random.choice([0, 1], size=N, p=[0.3, 0.7])
+    conn = {'correlation': matrix, 'labels': labels}
+    with open(os.path.join(graph_params.raw_dir, graph_params.filename), 'wb') as handle:
+        pickle.dump(conn, handle, protocol=pickle.DEFAULT_PROTOCOL)
+
+
+
 def sym_to_vec(symmetric):
     """
 
@@ -51,13 +70,13 @@ def compute_node_strength(sym_matrix):
     return np.vstack([node_strength_positive, node_strength_negative]).T
 
 
-def dgl_graph_from_vec(vec, graph_params, flatten=True):
+def dgl_graph_from_vec(vec, graph_params):
     """
     Create graph from flatten vector as a thresholed weighted matrix with properties
     as type torch 
     """
 
-    if flatten:
+    if graph_params.flatten:
         W = vec_to_sym(vec)
     else:
         W = vec
@@ -89,14 +108,12 @@ def load_data_to_graphs(graph_params):
     labels = []
     with open(os.path.join(graph_params.raw_dir, graph_params.filename), 'rb') as handle:
         conn = pickle.load(handle)
-    for row in tqdm(conn[graph_params.corr_type]):
+    for row in tqdm(conn[graph_params.corr_name]):
         graphs.append(dgl_graph_from_vec(row, graph_params))
-        labels = [item // 2 for item in conn[graph_params.target]]
+        # labels = [item // 2 for item in conn[graph_params.target_name]]
+        labels = conn[graph_params.target_name]
         # Convert the label list to tensor for saving.
         labels = torch.LongTensor(labels)
     return graphs, labels
 
 
-def return_subset(graphs, labels, idxs):
-    sub_graph, sub_labels = list(zip(*[(graphs[ind], labels[ind]) for ind in idxs]))
-    return sub_graph, sub_labels
