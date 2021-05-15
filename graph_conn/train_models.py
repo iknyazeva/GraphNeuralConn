@@ -71,7 +71,8 @@ class ConnGCM:
         epoch_test_acc = 0
         with torch.no_grad():
             for iter, (batch_graphs, batch_labels) in enumerate(dataloader):
-                batch_feat = batch_graphs.ndata['feat'].to(self.device)  # num x feat
+                batch_feat = batch_graphs.ndata['feat'].to(self.device)
+                batch_graphs = batch_graphs.to(self.device)# num x feat
                 batch_eweight = batch_graphs.edata['weight'].to(self.device)
                 scores = self.net(batch_graphs, batch_feat, batch_eweight)
                 loss = self.criterion(scores, batch_labels)
