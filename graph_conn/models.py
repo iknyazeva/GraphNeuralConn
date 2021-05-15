@@ -23,7 +23,7 @@ class NetParams:
     readout = attr.ib(default="mean")
     L = attr.ib(default=2)
     residual = attr.ib(default=True)
-    n_epoch = attr.ib(default=5)
+    n_epochs = attr.ib(default=5)
     init_lr = attr.ib(default=5e-5)
     lr_reduce_factor = attr.ib(default=0.5)
     lr_schedule_patience = attr.ib(default=25)
@@ -33,7 +33,7 @@ class NetParams:
     n_epochs = attr.ib(default=5)
     test_size = attr.ib(default=0.1)
     val_size = attr.ib(default=0.1)
-    model= attr.ib(default="GCNNet")
+    model = attr.ib(default="GCNNet")
 
 
     @classmethod
