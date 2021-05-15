@@ -45,6 +45,25 @@ def test_gin_net(medium_dataset):
     assert True
 
 def test_gcn_abide():
+    graph_params = GraphParams.from_file('../configs/abide_graph_conn.json')
+    dataset = CorrToDGLDataset(graph_params)
+    net_params = NetParams.from_file("../configs/abide_gcn.json")
+    net_params.n_epochs = 2
+    model = ConnGCM(net_params)
+    history = model.train(dataset=dataset, scheduler=False)
+    assert True
+
+
+def test_gin_abide():
+    graph_params = GraphParams.from_file('../configs/abide_graph_conn.json')
+    dataset = CorrToDGLDataset(graph_params)
+    net_params = NetParams.from_file("../configs/abide_gin.json")
+    net_params.n_epochs = 2
+    model = ConnGCM(net_params)
+    history = model.train(dataset=dataset, scheduler=False)
+    assert True
+
+
 
 
 
