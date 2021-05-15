@@ -51,6 +51,7 @@ class ConnGCM:
             batch_feat = batch_graphs.ndata['feat'].to(self.device)  # num x feat
             batch_eweight = batch_graphs.edata['weight'].to(self.device)
             batch_labels = batch_labels.to(self.device)
+            batch_graphs = batch_graphs.to(self.device)
             self.optimizer.zero_grad()
             scores = self.net(batch_graphs, batch_feat, batch_eweight)
             loss = self.criterion(scores, batch_labels)
@@ -114,7 +115,7 @@ class ConnGCM:
         split = dataset.get_split_idx(test_size=self.net_params.test_size, val_size=self.net_params.val_size)
         test_dataset = dataset[split['test']]
         train_dataset = dataset[split['train']]
-        val_dataset = dataset[split['train']]
+        val_dataset = dataset[split['valid']]
         train_loader = GraphDataLoader(train_dataset, batch_size=self.net_params.batch_size)
         test_loader = GraphDataLoader(test_dataset, batch_size=self.net_params.batch_size)
         val_loader = GraphDataLoader(val_dataset, batch_size=self.net_params.batch_size)

@@ -1,13 +1,5 @@
-from graph_conn.models import GCNNet, NetParams
 from graph_conn.train_models import ConnGCM
-from graph_conn.conn_dataset import FullAbideDataset, ListToDGLDataset
-from graph_conn.conn_data_utils import dgl_graph_from_vec
-from graph_conn.conn_dataset import GraphParams
-import pytest
-import numpy as np
-from graph_conn.models import GCNNet, NetParams
-from dgl.dataloading import GraphDataLoader
-import torch
+from graph_conn.models import NetParams
 from graph_conn.conn_dataset import GraphParams, CorrToDGLDataset
 from graph_conn.conn_data_utils import create_test_corr
 import pytest
