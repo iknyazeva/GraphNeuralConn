@@ -85,8 +85,14 @@ def dgl_graph_from_vec(vec, graph_params):
     u = getattr(feature_generation, graph_params.node_feat)(W)
     if graph_params.thr_type == 'pos':
         W[W < graph_params.threshold] = 0
-    else:
+    elif graph_params.thr_type == 'both':
         W[np.abs(W) < graph_params.threshold] = 0
+    elif graph_params.thr_type == 'neg':
+        W[-W < graph_params.threshold] = 0
+    else:
+        W[W < graph_params.threshold] = 0
+
+
 
     # convert to pytorch?
     W = sparse.csr_matrix(W).tocoo()
@@ -110,8 +116,10 @@ def load_data_to_graphs(graph_params):
         conn = pickle.load(handle)
     for row in tqdm(conn[graph_params.corr_name]):
         graphs.append(dgl_graph_from_vec(row, graph_params))
-        # labels = [item // 2 for item in conn[graph_params.target_name]]
-        labels = conn[graph_params.target_name]
+        if graph_params.name == "power_abide":
+            labels = [item // 2 for item in conn[graph_params.target_name]]
+        else:
+            labels = conn[graph_params.target_name]
         # Convert the label list to tensor for saving.
         labels = torch.LongTensor(labels)
     return graphs, labels

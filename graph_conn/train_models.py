@@ -23,7 +23,7 @@ class ConnGCM:
 
     def __init__(self, net_params):
         self.net_params = net_params
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.BCEWithLogitsLoss()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.net = GCNNet(net_params=net_params).to(self.device)
         self.optimizer = self._init_optimizer()
@@ -49,9 +49,9 @@ class ConnGCM:
         for iter, (batch_graphs, batch_labels) in enumerate(dataloader):
             batch_feat = batch_graphs.ndata['feat'].to(self.device)  # num x feat
             batch_eweight = batch_graphs.edata['weight'].to(self.device)
-            batch_labels = batch_labels.to(self.device)
+            batch_labels = batch_labels.type(torch.FloatTensor).to(self.device)
             self.optimizer.zero_grad()
-            scores = self.net(batch_graphs, batch_feat, batch_eweight)
+            scores = torch.squeeze(self.net(batch_graphs, batch_feat, batch_eweight))
             loss = self.criterion(scores, batch_labels)
             epoch_loss += loss.detach().item()
             scores = scores.detach().argmax(dim=1)
@@ -68,12 +68,13 @@ class ConnGCM:
             for iter, (batch_graphs, batch_labels) in enumerate(dataloader):
                 batch_feat = batch_graphs.ndata['feat'].to(self.device)  # num x feat
                 batch_eweight = batch_graphs.edata['weight'].to(self.device)
-                batch_labels = batch_labels.to(self.device)
-                scores = self.net(batch_graphs,batch_feat,batch_eweight)
+                batch_labels = batch_labels.type(torch.FloatTensor).to(self.device)
+                scores = torch.squeeze(self.net(batch_graphs, batch_feat, batch_eweight))
                 loss = self.criterion(scores, batch_labels)
                 epoch_test_loss += loss.detach().item()
-                scores = scores.detach().argmax(dim=1)
-                epoch_test_acc += (scores == batch_labels).float().sum().item()
+                # scores = scores.detach().argmax(dim=1)
+                scores = torch.round(torch.sigmoid(scores))
+                epoch_test_acc += (scores == batch_labels).float().mean().item()
             epoch_test_loss /= (iter + 1)
             epoch_test_acc /= (iter + 1)
             return epoch_test_loss, epoch_test_acc

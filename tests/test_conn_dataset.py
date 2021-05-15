@@ -13,25 +13,28 @@ def graph_params():
     graph_params = GraphParams()
     return graph_params
 
+def test_graph_params():
+    graph_params = GraphParams.from_file('../configs/test_graph_conn.json')
+    assert isinstance(graph_params.cut_type, bool)
+    assert isinstance(graph_params.n_nodes, int)
+
 def test_corr_to_dgl_dataset():
-    graph_params = GraphParams()
-    graph_params.raw_dir = '../dataset/'
-    graph_params.filename = 'test_corr.pickle'
-    graph_params.n_nodes = 20
-    graph_params.target_name = 'labels'
-    N = 30
+    graph_params = graph_params = GraphParams.from_file('../configs/test_graph_conn.json')
+    N = 60
     create_test_corr(N, graph_params)
     dataset = CorrToDGLDataset(graph_params)
     split = dataset.get_split_idx()
-    assert True
+    assert isinstance(split['train'], torch.LongTensor)
+    assert isinstance(dataset[0][0], dgl.DGLGraph)
 
 
 def test_full_abide_dataset():
-    graph_params = GraphParams()
-    dataset = FullAbideDataset(graph_params)
+    graph_params = GraphParams.from_file('../configs/abide_graph_conn.json')
+    dataset = CorrToDGLDataset(graph_params)
     split = dataset.get_split_idx()
     test_dataset = dataset[split['test']]
-    assert True
+    assert isinstance(split['train'], torch.LongTensor)
+    assert isinstance(dataset[0][0], dgl.DGLGraph)
 
 
 def test_list_to_dgl_dataset():

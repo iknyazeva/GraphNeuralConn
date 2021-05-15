@@ -1,0 +1,13 @@
+{"n_nodes": 264,
+  "flatten": true,
+  "threshold": 0.10,
+  "thr_type": "pos",
+  "cut_type": true,
+  "node_feat": "compute_node_strength",
+  "raw_dir": "../dataset/power_abide",
+  "name": "power_abide",
+  "add_self_loop": true,
+  "filename": "power_conn_abide.pickle",
+  "corr_name": "correlation",
+  "target_name": "abide_diagnosis"
+}

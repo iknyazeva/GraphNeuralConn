@@ -1,0 +1,13 @@
+{"n_nodes": 30,
+  "flatten": false,
+  "threshold": 0.10,
+  "thr_type": "pos",
+  "cut_type": true,
+  "node_feat": "compute_node_strength",
+  "raw_dir": "../dataset/",
+  "name": "test_conn",
+  "add_self_loop": true,
+  "filename": "test_corr.pickle",
+  "corr_name": "correlation",
+  "target_name": "labels"
+}

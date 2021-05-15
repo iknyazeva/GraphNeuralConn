@@ -41,8 +41,7 @@ class CorrToDGLDataset(DGLDataset):
         self.graphs = []
         self.labels = []
         self.graph_params = graph_params
-        super().__init__(name=graph_params.name)
-
+        super().__init__(name=graph_params.name, raw_dir=graph_params.raw_dir)
 
     def process(self):
 
@@ -90,9 +89,9 @@ class FullAbideDataset(CorrToDGLDataset):
     """
 
     def __init__(self, graph_params):
-        #self.graphs = []
-        #self.labels = []
-        #self.graph_params = graph_params
+        # self.graphs = []
+        # self.labels = []
+        # self.graph_params = graph_params
         super().__init__(name=graph_params.name, raw_dir=graph_params.raw_dir)
 
     def process(self):
@@ -131,6 +130,7 @@ class FullAbideDataset(CorrToDGLDataset):
 
     def __len__(self):
         return len(self.graphs)
+
 
 class ListToDGLDataset(DGLDataset):
     def __init__(self, graphs, labels):
@@ -175,23 +175,3 @@ class ListToDGLDataset(DGLDataset):
     def __len__(self):
         return len(self.graphs)
 
-
-class SplittedAbideDataset:
-    """
-    download abide dataset from flattened weight vector, 
-    split into train, val and test and return as dgl datasets
-    
-    """
-
-    def __init__(self, graph_params):
-        graphs, labels = load_data_to_graphs(graph_params)
-        X = range(len(labels))
-        y = labels.numpy()
-        ind_train, ind_test, y_train, _ = train_test_split(X, y, stratify=y, test_size=0.12)
-        ind_train, ind_val, _, _ = train_test_split(ind_train, y_train, stratify=y_train, test_size=0.1)
-        self.graph_params = graph_params
-        self.splitted_idxs = [ind_train, ind_val, ind_test]
-        train_graph, train_labels = list(zip(*[(graphs[ind], labels[ind]) for ind in ind_train]))
-        self.train_dataset = ToDGLDataset(*return_subset(graphs, labels, ind_train))
-        self.test_dataset = ToDGLDataset(*return_subset(graphs, labels, ind_test))
-        self.val_dataset = ToDGLDataset(*return_subset(graphs, labels, ind_val))
