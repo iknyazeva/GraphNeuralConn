@@ -1,4 +1,4 @@
-from graph_conn.models import GCNNet, NetParams
+from graph_conn.models import GCNNet, NetParams, GINNet
 from dgl.dataloading import GraphDataLoader
 import torch
 from graph_conn.conn_dataset import GraphParams, CorrToDGLDataset
@@ -18,6 +18,21 @@ def test_net_params():
     net_params = NetParams.from_file("../configs/test_gcn.json")
     assert isinstance(net_params.in_dim, int)
     assert isinstance(net_params.residual, bool)
+    net_params_gin = NetParams.from_file("../configs/test_gin.json")
+    assert isinstance(net_params_gin.hidden_dim_dim, int)
+
+
+def test_ginnet_one_graph(small_dataset):
+    net_params = NetParams.from_file("../configs/test_gin.json")
+    model = GINNet(net_params=net_params)
+    graph, label = small_dataset[0]
+    h = graph.ndata['feat']
+    e = graph.edata['weight']
+    out = model(graph, h, e)
+    assert isinstance(h, torch.Tensor)
+    assert isinstance(e, torch.Tensor)
+    assert 1 == out.shape[0]
+
 
 def test_gcnnet_one_graph(small_dataset):
     net_params = NetParams.from_file("../configs/test_gcn.json")

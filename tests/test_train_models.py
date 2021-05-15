@@ -23,10 +23,28 @@ def medium_dataset():
 
 def test_gcn_net(medium_dataset):
     net_params = NetParams.from_file("../configs/test_gcn.json")
-    #net_params.n_nodes = medium_dataset[0][0].number_of_nodes()
-    #net_params.readout = 'flatten'
+    net_params.n_nodes = medium_dataset[0][0].number_of_nodes()
+    net_params.readout = 'flatten'
     model = ConnGCM(net_params)
     history = model.train(dataset=medium_dataset)
     assert True
+
+def test_gcn_net_flatten(medium_dataset):
+    net_params = NetParams.from_file("../configs/test_gcn.json")
+    net_params.n_nodes = medium_dataset[0][0].number_of_nodes()
+    net_params.readout = 'flatten'
+    model = ConnGCM(net_params)
+    history = model.train(dataset=medium_dataset)
+    assert True
+
+def test_gin_net(medium_dataset):
+    net_params = NetParams.from_file("../configs/test_gin.json")
+    net_params.n_nodes = medium_dataset[0][0].number_of_nodes()
+    model = ConnGCM(net_params)
+    history = model.train(dataset=medium_dataset,  scheduler=True)
+    assert True
+
+def test_gcn_abide():
+
 
 

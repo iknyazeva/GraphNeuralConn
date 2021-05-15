@@ -25,7 +25,7 @@ class ConnGCM:
         self.net_params = net_params
         self.criterion = nn.CrossEntropyLoss()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.net = GCNNet(net_params=net_params).to(self.device)
+        self.net = getattr(models, net_params.model)(net_params=net_params).to(self.device)
         self.optimizer = self._init_optimizer()
         self.scheduler = self._init_scheduler()
 

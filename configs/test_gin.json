@@ -1,14 +1,15 @@
 {" n_nodes": 50,
   "in_dim": 2,
-  "hidden_dim": 10,
+  "hidden_dim": 8,
   "out_dim": 10,
   "n_classes":2,
   "dropout" : 0,
   "in_dropout": 0,
   "batch_norm" : true,
   "readout": "mean",
-  "edge_norm": true,
+  "gin_neighbor_aggr_type": "mean",
   "n_layers": 3,
+  "gin_n_mlp_layers": 2,
   "L": 2,
   "residual": true,
   "init_lr": 0.01,
@@ -20,5 +21,5 @@
   "batch_size": 20,
   "test_size": 0.1,
   "val_size": 0.1,
-  "model": "GCNNet"
+  "model": "GINNet"
 }
