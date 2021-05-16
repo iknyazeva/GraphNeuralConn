@@ -18,9 +18,11 @@ def test_graph_params():
     assert isinstance(graph_params.cut_type, bool)
     assert isinstance(graph_params.n_nodes, int)
 
+
 def test_corr_to_dgl_dataset():
-    graph_params = graph_params = GraphParams.from_file('../configs/test_graph_conn.json')
-    N = 60
+    graph_params = GraphParams.from_file('../configs/test_graph_conn.json')
+    graph_params.node_feat = 'return_roi_conns'
+    N = 30
     create_test_corr(N, graph_params)
     dataset = CorrToDGLDataset(graph_params)
     split = dataset.get_split_idx()

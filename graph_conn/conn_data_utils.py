@@ -83,16 +83,12 @@ def dgl_graph_from_vec(vec, graph_params):
     # create graph
     # add signal on nodes
     u = getattr(feature_generation, graph_params.node_feat)(W)
-    if graph_params.thr_type == 'pos':
-        W[W < graph_params.threshold] = 0
-    elif graph_params.thr_type == 'both':
-        W[np.abs(W) < graph_params.threshold] = 0
-    elif graph_params.thr_type == 'neg':
-        W[-W < graph_params.threshold] = 0
-    else:
-        W[W < graph_params.threshold] = 0
 
-
+    if graph_params.thr_type == 'both':
+        W = np.abs(W)
+    if graph_params.thr_type == 'neg':
+        W = -W
+    W[W < graph_params.threshold] = 0
 
     # convert to pytorch?
     W = sparse.csr_matrix(W).tocoo()

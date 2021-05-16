@@ -89,8 +89,8 @@ class ConnGCM:
 
         train_loader, test_loader, val_loader = self.make_loader(dataset)
         history = []
-        log_template = "\nEpoch {ep:03d} train_loss: {t_loss:0.4f} \
-                val_loss {v_loss:0.4f}"
+        log_template = "\nEpoch {ep:03d} train_loss, acc: {t_loss:0.4f} {t_acc:0.3f} \
+                val_loss, acc {v_loss:0.4f} {v_acc:0.3f}"
         with tqdm(desc="epoch", total=self.net_params.n_epochs) as pbar_outer:
             for epoch in range(self.net_params.n_epochs):
                 train_loss, train_acc = self.train_epoch(train_loader)
@@ -101,8 +101,8 @@ class ConnGCM:
                     self.scheduler.step(val_loss)
 
                 pbar_outer.update(1)
-                tqdm.write(log_template.format(ep=epoch + 1, t_loss=train_loss,
-                                               v_loss=val_loss))
+                tqdm.write(log_template.format(ep=epoch + 1, t_loss=train_loss, t_acc = train_acc,
+                                               v_loss=val_loss, v_acc = val_acc))
         return history
 
     def make_loader(self, dataset):

@@ -19,8 +19,12 @@ def test_graph_params():
 def test_dgl_graph_from_vec():
     graph_params = GraphParams()
     graph_params.n_nodes = 10
+    graph_params.thr_type = 'both'
+    graph_params.flatten = False
+    graph_params.node_feat='return_roi_conns'
+    graph_params.add_self_loop = False
     sym = 0.3*np.random.randn(10, 10)
-    g = dgl_graph_from_vec(sym, graph_params, flatten=False)
+    g = dgl_graph_from_vec(sym, graph_params)
     assert True
 
 def test_sym_to_vec():
