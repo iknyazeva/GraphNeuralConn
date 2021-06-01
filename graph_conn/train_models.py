@@ -7,6 +7,7 @@ from tqdm import tqdm
 from graph_conn import models
 from graph_conn.models import NetParams
 import dgl
+from torchmetrics import AUROC
 
 
 class ConnGCM:
@@ -28,6 +29,7 @@ class ConnGCM:
         self.net = getattr(models, net_params.model)(net_params=net_params).to(self.device)
         self.optimizer = self._init_optimizer()
         self.scheduler = self._init_scheduler()
+        self.auroc = AUROC()
 
     def _init_optimizer(self):
         return torch.optim.Adam(self.net.parameters(),
@@ -67,6 +69,28 @@ class ConnGCM:
 
     def eval_epoch(self, dataloader):
         self.net.eval()
+        epoch_val_loss = 0
+        epoch_val_acc = 0
+        with torch.no_grad():
+            for iter, (batch_graphs, batch_labels) in enumerate(dataloader):
+                batch_labels = batch_labels.to(self.device)
+                batch_feat = batch_graphs.ndata['feat'].to(self.device)
+                batch_graphs = batch_graphs.to(self.device)# num x feat
+                batch_eweight = batch_graphs.edata['weight'].to(self.device)
+                scores = self.net(batch_graphs, batch_feat, batch_eweight)
+                loss = self.criterion(scores, batch_labels)
+                epoch_val_loss += loss.detach().item()
+                scores = scores.detach().argmax(dim=1)
+                # scores = torch.round(torch.sigmoid(scores))
+                epoch_val_acc += (scores == batch_labels).float().mean().item()
+                epoch_val_auc = self.auroc(scores, batch_labels)
+            epoch_val_loss /= (iter + 1)
+            epoch_val_acc /= (iter + 1)
+            epoch_val_auc /= (iter + 1)
+            return epoch_val_loss, epoch_val_acc, epoch_val_auc
+
+    def test_epoch(self, dataloader):
+        self.net.eval()
         epoch_test_loss = 0
         epoch_test_acc = 0
         with torch.no_grad():
@@ -81,28 +105,33 @@ class ConnGCM:
                 scores = scores.detach().argmax(dim=1)
                 # scores = torch.round(torch.sigmoid(scores))
                 epoch_test_acc += (scores == batch_labels).float().mean().item()
+                epoch_test_auc = self.auroc(scores, batch_labels)
             epoch_test_loss /= (iter + 1)
             epoch_test_acc /= (iter + 1)
-            return epoch_test_loss, epoch_test_acc
+            epoch_test_auc /= (iter + 1)
+            return epoch_test_loss, epoch_test_acc, epoch_test_auc
 
     def train(self, dataset, scheduler=False):
 
         train_loader, test_loader, val_loader = self.make_loader(dataset)
         history = []
         log_template = "\nEpoch {ep:03d} train_loss, acc: {t_loss:0.4f} {t_acc:0.3f} \
-                val_loss, acc {v_loss:0.4f} {v_acc:0.3f}"
+                val_loss, acc, auc {v_loss:0.4f} {v_acc:0.3f} {v_auc:0.3f}"
         with tqdm(desc="epoch", total=self.net_params.n_epochs) as pbar_outer:
             for epoch in range(self.net_params.n_epochs):
                 train_loss, train_acc = self.train_epoch(train_loader)
-                val_loss, val_acc = self.eval_epoch(val_loader)
-                history.append([(train_loss, train_acc), (val_loss, val_acc)])
+                val_loss, val_acc, val_auc = self.eval_epoch(val_loader)
+                history.append([(train_loss, train_acc), (val_loss, val_acc, val_auc)])
 
                 if scheduler:
                     self.scheduler.step(val_loss)
 
                 pbar_outer.update(1)
                 tqdm.write(log_template.format(ep=epoch + 1, t_loss=train_loss, t_acc = train_acc,
-                                               v_loss=val_loss, v_acc = val_acc))
+                                               v_loss=val_loss, v_acc = val_acc, v_auc = val_auc))
+        test_loss, test_acc, test_auc = self.test_epoch(test_loader)
+        history.append([(test_loss, test_acc, test_auc)])
+        print(f'test_loss, acc, auc {test_loss:0.4f} {test_acc:0.3f} {test_auc:0.3f}')
         return history
 
     def make_loader(self, dataset):
